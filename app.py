@@ -1,29 +1,39 @@
+# app.py
 import streamlit as st
 import plotly.express as px
 import pandas as pd
 
-def load_data():
-    return pd.read_csv("data/processed/customer_segments.csv")
+def load_clustered_pca_data():
+    """Load processed data with cluster_id, pc1, pc2."""
+    return pd.read_csv("data/processed/customer_segments_pca.csv")
 
-df = load_data()
+df = load_clustered_pca_data()
 
 st.title("🌀 Customer Segmenter Dashboard")
 
-# Scatter plot (PCA)
+# PCA Scatter Plot
 fig = px.scatter(
     df,
     x="pc1",
     y="pc2",
     color="cluster_id",
-    hover_data=["CustomerID", "Age", "Income", "NumberPurchases"]
+    hover_data=["Age", "Income", "NumberPurchases", "AvgPurchaseValue"]
 )
 
+st.subheader("PCA Cluster Visualization")
 st.plotly_chart(fig)
 
-# Cluster filter
-selected_cluster = st.selectbox("Select Cluster", sorted(df["cluster_id"].unique()))
+# Cluster Filter
+clusters = sorted(df["cluster_id"].unique())
+selected_cluster = st.selectbox("Select a cluster to inspect:", clusters)
 
-filtered = df[df["cluster_id"] == selected_cluster]
+cluster_df = df[df["cluster_id"] == selected_cluster]
 
-st.subheader(f"Customers in Cluster {selected_cluster}")
-st.write(filtered[ "Age", "Income", "NumberPurchases", "AvgPurchaseValue", "SpendingScore"])
+st.subheader(f"Cluster {selected_cluster} – Customers")
+st.dataframe(cluster_df[[
+    "Age",
+    "Income",
+    "NumberPurchases",
+    "AvgPurchaseValue",
+    "SpendingScore"
+]])
